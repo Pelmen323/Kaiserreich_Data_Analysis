@@ -66,13 +66,6 @@ app.layout = html.Div(
         html.Label(children='American Civil War Winrate'),
         dcc.Dropdown(id='acw-winrate-options', options=get_dropdown_options(), value=get_dropdown_options()[0], clearable=False),
         dcc.Graph(id='acw-winrate-graph'),
-
-            html.A(
-            html.Button("Download as HTML"), 
-            id="download",
-            href="data:text/html;base64," + encoded,
-            download="plotly_graph.html"
-        )
     ],
 )
 
