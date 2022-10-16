@@ -8,6 +8,7 @@ dash = "*"
 jupyter-dash = "*"
 pandas = "*"
 gunicorn = "*"
+flask = "*"
 
 [dev-packages]
 

@@ -4,9 +4,11 @@ import pandas as pd
 import numpy as np
 import os
 import glob
+import flask
 
 
-app = Dash(__name__)
+server = flask.Flask(__name__)
+app = Dash(server=server)
 colors = {
     'background': '#2b2b2b',
     'text': '#abb6c5'
