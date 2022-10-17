@@ -17,7 +17,15 @@ cache = Cache(app.server, config={
 TIMEOUT = 300
 colors = {
     "background": "#2b2b2b",
-    "text": "#abb6c5"
+    "text": "#abb6c5",
+    "grid": "#abb6c5",
+    # "text": "#868D98"
+}
+
+line_widths = {
+    "plot_line": 3,
+    "grid_xaxis": 0.5,
+    "grid_yaxis": 0.5,
 }
 
 ####################
@@ -127,8 +135,8 @@ def create_argentina_winrate_graph(input_file):
                 "Argentina": "rgb(153,217,234)",
                 "Chile": "rgb(150,71,71)",
                 "Peaceful Reunification": "rgb(180,217,214)",
-                "Nobody": "white",
-            }
+                "Nobody": "grey",
+            },
         )
 
         fig.update_layout(
@@ -137,6 +145,9 @@ def create_argentina_winrate_graph(input_file):
             font_color=colors["text"],
             legend_title="Country",
         )
+        fig.update_traces(line=dict(width=line_widths["plot_line"]))
+        fig.update_xaxes(showgrid=True, gridwidth=line_widths["grid_xaxis"], gridcolor=colors["grid"])
+        fig.update_yaxes(showgrid=True, gridwidth=line_widths["grid_yaxis"], gridcolor=colors["grid"])
 
         return fig
     else:
@@ -171,8 +182,8 @@ def create_scw_winrate_pie(input_file):
                 "CNT-FAI": "rgb(204,0,0)",
                 "Kingdom of Spain": "rgb(242,205,94)",
                 "Carlistis": "rgb(200,100,31)",
-                "Nobody": "white",
-            }
+                "Nobody": "grey",
+            },
         )
 
         fig.update_layout(
@@ -180,6 +191,7 @@ def create_scw_winrate_pie(input_file):
             paper_bgcolor=colors["background"],
             font_color=colors["text"],
             legend_title="Country",
+
         )
 
         return fig
@@ -237,7 +249,7 @@ def create_acw_winrate_pie(input_file, acw_war_configuration):
                 "PSA": "rgb(242,205,94)",
                 "NEE": "rgb(0,107,51)",
                 "Nobody": "grey",
-            }
+            },
         )
 
         fig.update_layout(
@@ -364,6 +376,9 @@ def create_acw_winrate_graph(input_file, acw_war_configuration):
             font_color=colors["text"],
             legend_title="Country",
         )
+        fig.update_traces(line=dict(width=line_widths["plot_line"]))
+        fig.update_xaxes(showgrid=True, gridwidth=line_widths["grid_xaxis"], gridcolor=colors["grid"])
+        fig.update_yaxes(showgrid=True, gridwidth=line_widths["grid_yaxis"], gridcolor=colors["grid"])
 
         return fig
     else:
@@ -377,15 +392,26 @@ def create_acw_winrate_graph(input_file, acw_war_configuration):
 app.layout = html.Div(
     style={"backgroundColor": colors["background"], "padding": 10, "flex": 1},
     children=[
-        html.Label(children="Argentinean-Chilean War"),
+        html.Label(children="Links to items", id="contents-header"),
+        html.Br(),
+        html.A(children="Argentina-Chile", href="argentina-section", className="contents-link"),
+        html.Br(),
+        html.A(children="Spanish Civil War", href="#scw-section", className="contents-link"),
+        html.Br(),
+        html.A(children="American Civil War", href="#acw-section", className="contents-link"),
+        html.Br(),
+        html.Label(children="Argentinean-Chilean War", id="argentina-section"),
+
         dcc.Dropdown(id="argentina-winrate-data-source", options=get_dropdown_options(), value=get_dropdown_options()[0], clearable=False),
         dcc.Graph(id="argentina-winrate-graph"),
+        html.Br(),
 
-        html.Label(children="Spanish Civil War"),
+        html.Label(children="Spanish Civil War", id="scw-section"),
         dcc.Dropdown(id="scw-winrate-data-source", options=get_dropdown_options(), value=get_dropdown_options()[0], clearable=False),
         dcc.Graph(id="scw-winrate-pie"),
+        html.Br(),
 
-        html.Label(children="American Civil War"),
+        html.Label(children="American Civil War", id="acw-section"),
         dcc.Dropdown(id="acw-winrate-data-source", options=get_dropdown_options(), value=get_dropdown_options()[0], clearable=False),
         dcc.Dropdown(id="acw-winrate-war-configuration", options=["All", "2-Way War", "3-Way War", "Mac Goes West", "Mac Goes East", "Mac Doesn't Retreat"], value="All", clearable=False),
         dcc.Graph(id="acw-winrate-pie"),

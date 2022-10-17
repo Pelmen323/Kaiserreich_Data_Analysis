@@ -19,6 +19,8 @@ div {
     font-size: 24px;  
 }
 
+/* Style the dropdowns */
+
 .dash-dropdown {
     width: 15%;
     padding-left: 20px;
@@ -27,4 +29,18 @@ div {
 .dash-dropdown div {
     font-size: 16px;
     font-family: Roboto;
+    color: #444444;
+}
+
+/* Style the contents section */
+
+a {
+    color: #abb6c5;
+    font-size: 16px;
+    font-family: Roboto;
+    float: left;
+}
+
+#contents-header {
+    float: left;
 }
