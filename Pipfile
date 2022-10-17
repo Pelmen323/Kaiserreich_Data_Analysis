@@ -9,6 +9,7 @@ jupyter-dash = "*"
 pandas = "*"
 gunicorn = "*"
 flask = "*"
+flask-caching = "*"
 
 [dev-packages]
 

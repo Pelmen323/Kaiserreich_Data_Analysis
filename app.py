@@ -5,10 +5,16 @@ import pandas as pd
 import os
 import glob
 import flask
-
+from flask_caching import Cache
 
 server = flask.Flask(__name__)
 app = Dash(server=server)
+cache = Cache(app.server, config={
+    'CACHE_TYPE': 'filesystem',
+    'CACHE_DIR': 'cache-directory'
+})
+
+TIMEOUT = 300
 colors = {
     "background": "#2b2b2b",
     "text": "#abb6c5"
@@ -86,6 +92,7 @@ def read_csv_file(input_file: str) -> pd.DataFrame:
 @app.callback(
     Output("argentina-winrate-graph", "figure"),
     Input("argentina-winrate-data-source", "value"))
+@cache.memoize(timeout=TIMEOUT)
 def create_argentina_winrate_graph(input_file):
     """ARG-CHL winrate graph
 
@@ -139,6 +146,7 @@ def create_argentina_winrate_graph(input_file):
 @app.callback(
     Output("scw-winrate-graph", "figure"),
     Input("scw-winrate-data-source", "value"))
+@cache.memoize(timeout=TIMEOUT)
 def create_scw_winrate_graph(input_file):
     """Spanish Civil War winrate pie
 
@@ -183,6 +191,7 @@ def create_scw_winrate_graph(input_file):
     Output("acw-winrate-graph", "figure"),
     Input("acw-winrate-data-source", "value"),
     Input("acw-winrate-war-configuration", "value"))
+@cache.memoize(timeout=TIMEOUT)
 def create_acw_winrate_graph(input_file, acw_war_configuration):
     """American Civil War winrate graph
 
