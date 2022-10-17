@@ -1,7 +1,7 @@
 from dash import Dash, html, dcc, Input, Output
 import plotly.express as px
 import pandas as pd
-import numpy as np
+
 import os
 import glob
 import flask
@@ -13,7 +13,6 @@ colors = {
     'background': '#2b2b2b',
     'text': '#abb6c5'
 }
-
 ########################
 ### Common functions ###
 ########################
@@ -50,22 +49,28 @@ def get_dropdown_options() -> list:
     return sorted_list_of_files
 
 def generate_mock_graph() -> object:
-    d = {'col1': [1, 2], 'col2': [3, 4]}
+    d = {'col1': [0], 'col2': [0]}
     mock = pd.DataFrame(data=d)
-    return px.line(data_frame=mock, x='col1', y='col2', title="No data found in this file. Please select other file from the dropdown.")
+    fig = px.line(data_frame=mock, x='col1', y='col2', title="No data found in this file. Please select other file from the dropdown.")
+    fig.update_layout(
+        plot_bgcolor=colors['background'],
+        paper_bgcolor=colors['background'],
+        font_color=colors['text']
+    )
+    return fig
 
 app.layout = html.Div(
     style={'backgroundColor': colors["background"], 'padding': 10, 'flex': 1},
     children=[
-        html.Label(children='Argentina Winrate Over Time'),
+        html.Label(children='Argentinean-Chilean War'),
         dcc.Dropdown(id='argentina-winrate-options', options=get_dropdown_options(), value=get_dropdown_options()[0], clearable=False),
         dcc.Graph(id='argentina-winrate-graph'),
 
-        html.Label(children='Spanish Civil War Winrate'),
+        html.Label(children='Spanish Civil War'),
         dcc.Dropdown(id='scw-winrate-options', options=get_dropdown_options(), value=get_dropdown_options()[0], clearable=False),
         dcc.Graph(id='scw-winrate-graph'),
 
-        html.Label(children='American Civil War Winrate'),
+        html.Label(children='American Civil War'),
         dcc.Dropdown(id='acw-winrate-options', options=get_dropdown_options(), value=get_dropdown_options()[0], clearable=False),
         dcc.Graph(id='acw-winrate-graph'),
     ],
@@ -95,13 +100,26 @@ def create_argentina_winrate_graph(input_file):
             import_doc_wr_over_time = import_doc_wr_over_time.append(new_row, ignore_index=True)
 
         prepared_data = import_doc_wr_over_time.sort_values('Year')
-        fig = px.line(data_frame=prepared_data, x='Year', y=['Argentina', 'Chile', 'Peaceful Reunification', 'Nobody'], labels={'x':'Date', 'y':"Country"}, title="ARG war balance (wins per year)")
-
+        fig = px.line(
+            data_frame=prepared_data,
+            x='Year', 
+            y=['Argentina', 'Chile', 'Peaceful Reunification', 'Nobody'], 
+            labels={'x':'Date', 'y':"Country"}, 
+            title="ARG-CHL winrate graph",    
+            color="variable",
+            color_discrete_map={
+                "Argentina": "rgb(153,217,234)", 
+                "Chile": "rgb(150,71,71)", 
+                "Peaceful Reunification": "rgb(180,217,214)", 
+                "Nobody": "white",
+            }
+        )
 
         fig.update_layout(
             plot_bgcolor=colors['background'],
             paper_bgcolor=colors['background'],
-            font_color=colors['text']
+            font_color=colors['text'],
+            legend_title="Country",
         )
 
         return fig
@@ -119,12 +137,25 @@ def create_scw_winrate_graph(input_file):
     if "Who won the Spanish Civil War?" in import_doc.columns:    
         import_doc = import_doc["Who won the Spanish Civil War?"].value_counts()
         df = pd.DataFrame({"Country": import_doc.index, "Value": import_doc.values})
-        fig = px.pie(data_frame=df, values="Value", names="Country", color_discrete_sequence=px.colors.qualitative.G10)
+        fig = px.pie(
+            data_frame=df,
+            values="Value",
+            names="Country",
+            title="SCW winrate pie", 
+            color="Country",
+            color_discrete_map={
+                "CNT-FAI": "rgb(204,0,0)", 
+                "Kingdom of Spain": "rgb(242,205,94)", 
+                "Carlistis": "rgb(200,100,31)", 
+                "Nobody": "white",
+            }
+        )
 
         fig.update_layout(
             plot_bgcolor=colors['background'],
             paper_bgcolor=colors['background'],
             font_color=colors['text'],
+            legend_title="Country",
         )
 
         return fig
@@ -153,12 +184,28 @@ def create_acw_winrate_graph(input_file):
             import_doc_wr_over_time = import_doc_wr_over_time.append(new_row, ignore_index=True)
 
         df = import_doc_wr_over_time.sort_values('Year')
-        fig = px.line(data_frame=df , x='Year', y=["USA", "CSA", "TEX", "PSA", "NEE", "Nobody"], labels={'x':'Date', 'y':"Country"}, title="ACW war balance (wins per year)")
+        fig = px.line(
+            data_frame=df,
+            x='Year',
+            y=["USA", "CSA", "TEX", "PSA", "NEE"],
+            labels={'x':'Date', 'y':"Country"},
+            title="ACW winrate graph",
+            color="variable",
+            color_discrete_map={
+                "USA": "rgb(20,133,237)",
+                "CSA": "rgb(178,34,52)",
+                "TEX": "rgb(60,59,110)",
+                "PSA": "rgb(242,205,94)",
+                "NEE": "rgb(0,107,51)",
+                "Nobody": "grey",
+            } 
+        )
 
         fig.update_layout(
             plot_bgcolor=colors['background'],
             paper_bgcolor=colors['background'],
             font_color=colors['text'],
+            legend_title="Country",
         )
 
         return fig
