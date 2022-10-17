@@ -144,10 +144,10 @@ def create_argentina_winrate_graph(input_file):
 
 
 @app.callback(
-    Output("scw-winrate-graph", "figure"),
+    Output("scw-winrate-pie", "figure"),
     Input("scw-winrate-data-source", "value"))
 @cache.memoize(timeout=TIMEOUT)
-def create_scw_winrate_graph(input_file):
+def create_scw_winrate_pie(input_file):
     """Spanish Civil War winrate pie
 
     Args:
@@ -188,6 +188,71 @@ def create_scw_winrate_graph(input_file):
 
 
 @app.callback(
+    Output("acw-winrate-pie", "figure"),
+    Input("acw-winrate-data-source", "value"),
+    Input("acw-winrate-war-configuration", "value"))
+@cache.memoize(timeout=TIMEOUT)
+def create_acw_winrate_pie(input_file, acw_war_configuration):
+    """American Civil War winrate pie
+
+    Args:
+        input_file (_type_): .csv file name imported by the function. Is defined by the dropdown value
+        acw_war_configuration (str): Graph option
+
+    Returns:
+        fig: graph object
+    """
+    import_doc = read_csv_file(input_file)
+
+    if "When did the American Civil War end?" in import_doc.columns:
+        if acw_war_configuration == "All":
+            if "Who won the American Civil War?" in import_doc.columns:
+                import_doc = import_doc["Who won the American Civil War?"].value_counts()
+            else:
+                return generate_mock_graph()
+
+        elif acw_war_configuration == "2-Way War":
+            import_doc = import_doc["If the American Civil War was a two-way, who won it?"].value_counts()
+
+        elif acw_war_configuration == "3-Way War":
+            import_doc = import_doc["If the American Civil War was a three-way, who won it?"].value_counts()
+        elif acw_war_configuration == "Mac Goes East":
+            import_doc = import_doc["If MacArthur retreated EAST, who won the ACW?"].value_counts()
+        elif acw_war_configuration == "Mac Goes West":
+            import_doc = import_doc["If MacArthur retreated WEST, who won the ACW?"].value_counts()
+        elif acw_war_configuration == "Mac Doesn't Retreat":
+            import_doc = import_doc["If MacArthur did NOT retreat, who won the ACW?"].value_counts()
+
+        df = pd.DataFrame({"Country": import_doc.index, "Value": import_doc.values})
+        fig = px.pie(
+            data_frame=df,
+            values="Value",
+            names="Country",
+            title="ACW winrate pie",
+            color="Country",
+            color_discrete_map={
+                "USA": "rgb(20,133,237)",
+                "CSA": "rgb(178,34,52)",
+                "TEX": "rgb(60,59,110)",
+                "PSA": "rgb(242,205,94)",
+                "NEE": "rgb(0,107,51)",
+                "Nobody": "grey",
+            }
+        )
+
+        fig.update_layout(
+            plot_bgcolor=colors["background"],
+            paper_bgcolor=colors["background"],
+            font_color=colors["text"],
+            legend_title="Country",
+        )
+
+        return fig
+    else:
+        return generate_mock_graph()
+
+
+@app.callback(
     Output("acw-winrate-graph", "figure"),
     Input("acw-winrate-data-source", "value"),
     Input("acw-winrate-war-configuration", "value"))
@@ -197,6 +262,7 @@ def create_acw_winrate_graph(input_file, acw_war_configuration):
 
     Args:
         input_file (_type_): .csv file name imported by the function. Is defined by the dropdown value
+        acw_war_configuration (str): Graph option
 
     Returns:
         fig: graph object
@@ -317,11 +383,12 @@ app.layout = html.Div(
 
         html.Label(children="Spanish Civil War"),
         dcc.Dropdown(id="scw-winrate-data-source", options=get_dropdown_options(), value=get_dropdown_options()[0], clearable=False),
-        dcc.Graph(id="scw-winrate-graph"),
+        dcc.Graph(id="scw-winrate-pie"),
 
         html.Label(children="American Civil War"),
         dcc.Dropdown(id="acw-winrate-data-source", options=get_dropdown_options(), value=get_dropdown_options()[0], clearable=False),
         dcc.Dropdown(id="acw-winrate-war-configuration", options=["All", "2-Way War", "3-Way War", "Mac Goes West", "Mac Goes East", "Mac Doesn't Retreat"], value="All", clearable=False),
+        dcc.Graph(id="acw-winrate-pie"),
         dcc.Graph(id="acw-winrate-graph"),
     ],
 )
