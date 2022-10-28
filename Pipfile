@@ -5,9 +5,8 @@ name = "pypi"
 
 [packages]
 dash = "*"
-jupyter-dash = "*"
 pandas = "*"
-gunicorn = "*"
+plotly = "*"
 flask = "*"
 flask-caching = "*"
 
