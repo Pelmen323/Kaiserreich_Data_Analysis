@@ -9,6 +9,7 @@ pandas = "*"
 plotly = "*"
 flask = "*"
 flask-caching = "*"
+gunicorn = "*"
 
 [dev-packages]
 
