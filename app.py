@@ -5,28 +5,16 @@ import pandas as pd
 import os
 import glob
 import flask
+import json
 from flask_caching import Cache
 
 server = flask.Flask(__name__)
 app = Dash(server=server)
-cache = Cache(app.server, config={
-    'CACHE_TYPE': 'filesystem',
-    'CACHE_DIR': 'cache-directory'
-})
-
+cache = Cache(app.server, config={ 'CACHE_TYPE': 'filesystem', 'CACHE_DIR': 'cache-directory'})
 TIMEOUT = 300
-colors = {
-    "background": "#2b2b2b",
-    "text": "#abb6c5",
-    "grid": "#abb6c5",
-    # "text": "#868D98"
-}
 
-line_widths = {
-    "plot_line": 3,
-    "grid_xaxis": 0.5,
-    "grid_yaxis": 0.5,
-}
+colors = { "background": "#2b2b2b", "text": "#abb6c5", "grid": "#abb6c5"}
+line_widths = {"plot_line": 3, "grid_xaxis": 0.5, "grid_yaxis": 0.5}
 
 ####################
 # Common functions #
@@ -505,6 +493,48 @@ def create_acw_winrate_graph(input_file, war_configuration):
     else:
         return generate_mock_graph()
 
+@app.callback(
+    Output("map-graph", "figure"),
+    Input("map-data-source", "value"))
+def create_map(input_file):
+    """Spanish Civil War winrate pie
+
+    Args:
+        input_file (_type_): .csv file name imported by the function. Is defined by the dropdown value
+
+    Returns:
+        fig: graph object
+    """
+    dirname = os.path.dirname(__file__)
+    filepath = os.path.join(dirname, "input//map.geojson")
+    with open(filepath, 'r', encoding="UTF-8") as file:
+        json_obj = file.read()
+    geojson = json.loads(json_obj)
+    import_doc = read_csv_file(input_file)
+
+    if "Num of divisions" in import_doc.columns:
+        # import_doc = import_doc["Who won the Spanish Civil War?"].value_counts()
+        df = pd.DataFrame({"Country": ["USA", "DEU", "FRA", "ARG"], "Divisions number": [100, 150, 125, 0]})
+        fig = px.choropleth(
+            df, geojson=geojson, locations="Country", featureidkey="properties.adm0_a3", color="Divisions number")
+
+        fig.update_layout(
+            plot_bgcolor=colors["background"],
+            paper_bgcolor=colors["background"],
+            font_color=colors["text"],
+            legend_title="Country",
+        )
+        # Map - specific tweaks
+        fig.update_layout(
+            autosize=False,
+            margin = dict(l=0, r=0, b=0, t=0, pad=4, autoexpand=True),
+        )
+
+        return fig
+    else:
+        return generate_mock_graph()
+
+
 ###############
 # Application #
 ###############
@@ -545,6 +575,11 @@ app.layout = html.Div(
         dcc.Dropdown(id="acw-winrate-war-configuration", options=["All", "2-Way War", "3-Way War", "Mac Goes West", "Mac Goes East", "Mac Doesn't Retreat"], value="All", clearable=False),
         dcc.Graph(id="acw-winrate-pie"),
         dcc.Graph(id="acw-winrate-graph"),
+
+        html.Br(),
+        html.Label(children="Test Map", id="map-section"),
+        dcc.Dropdown(id="map-data-source", options=get_dropdown_options(), value=get_dropdown_options()[0], clearable=False),
+        dcc.Graph(id="map-graph"),
     ],
 )
 
