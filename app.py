@@ -8,6 +8,8 @@ import flask
 import json
 from flask_caching import Cache
 
+import ast
+
 server = flask.Flask(__name__)
 app = Dash(server=server)
 cache = Cache(app.server, config={ 'CACHE_TYPE': 'filesystem', 'CACHE_DIR': 'cache-directory'})
@@ -83,6 +85,64 @@ def read_csv_file(input_file: str) -> pd.DataFrame:
 ####################################
 # Functions for separate questions #
 ####################################
+@app.callback(
+    Output("world-tension-graph", "figure"),
+    Input("world-tension-data-source", "value"))
+def create_world_tension_graph(input_file):
+    """ARG-CHL winrate graph
+
+    Args:
+        input_file (_type_): .csv file name imported by the function. Is defined by the dropdown value
+
+    Returns:
+        fig: graph object
+    """
+    import_doc = read_csv_file(input_file)
+
+    if "World Tension Data" in import_doc.columns:
+        df = pd.DataFrame(columns=["Time", "World Tension"])       
+        fig = px.line(
+            data_frame=df,
+            x="Time",
+            y="World Tension",
+            # labels={"x": "Date", "y": "Country"},
+            # title="ARG-CHL winrate graph",
+            # color="variable",
+            # color_discrete_map={
+            #     "Argentina": "rgb(153,217,234)",
+            #     "Chile": "rgb(150,71,71)",
+            #     "Peaceful Reunification": "rgb(180,217,214)",
+            #     "Nobody": "grey",
+            # },
+        )
+
+        fig.update_layout(
+            plot_bgcolor=colors["background"],
+            paper_bgcolor=colors["background"],
+            font_color=colors["text"],
+            legend_title="Country",
+        )
+
+        z = import_doc["World Tension Data"]
+        for i in z:
+            df_row = ast.literal_eval(i)
+            if df_row["1940.December"] < 0.75:
+                color = "Red"
+            elif df_row["1940.July"] < 0.75:
+                color = "Orange"
+            else:
+                color = "Green"
+            fig.add_scatter(x=[i for i in df_row.keys()], y=[i for i in df_row.values()], marker=dict(size=3, color=color))
+        
+        fig.update_traces(line=dict(width=1))
+        fig.update_xaxes(showgrid=True, gridwidth=line_widths["grid_xaxis"], gridcolor=colors["grid"])
+        fig.update_yaxes(showgrid=True, gridwidth=line_widths["grid_yaxis"], gridcolor=colors["grid"])
+
+        return fig
+    else:
+        return generate_mock_graph()
+
+
 @app.callback(
     Output("2wk-winrate-pie", "figure"),
     Input("2wk-winrate-data-source", "value"),
@@ -497,7 +557,7 @@ def create_acw_winrate_graph(input_file, war_configuration):
     Output("map-graph", "figure"),
     Input("map-data-source", "value"))
 def create_map(input_file):
-    """Spanish Civil War winrate pie
+    """Interactive map
 
     Args:
         input_file (_type_): .csv file name imported by the function. Is defined by the dropdown value
@@ -552,6 +612,11 @@ app.layout = html.Div(
         html.A(children="Spanish Civil War", href="#scw-section", className="contents-link"),
         html.Br(),
         html.A(children="American Civil War", href="#acw-section", className="contents-link"),
+        html.Br(),
+
+        html.Label(children="World Tension", id="wt-section"),
+        dcc.Dropdown(id="world-tension-data-source", options=get_dropdown_options(), value=get_dropdown_options()[0], clearable=False),
+        dcc.Graph(id="world-tension-graph"),
         html.Br(),
 
         html.Label(children="The Second Weltkrieg", id="2wk-section"),
