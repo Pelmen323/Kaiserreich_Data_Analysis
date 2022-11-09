@@ -99,7 +99,7 @@ def create_world_tension_graph(input_file):
     """
     csv_df = read_csv_file(input_file)
 
-    if "World Tension Data" in csv_df.columns: 
+    if "WT Data" in csv_df.columns: 
         fig = px.line(
             data_frame=pd.DataFrame(columns=["Time", "World Tension"]),
             x="Time",
@@ -109,10 +109,12 @@ def create_world_tension_graph(input_file):
         # Parse through DF and create scatter for each row
         counter_red = 0
         counter_orange = 0
+        counter_yellow = 0
         counter_green = 0
-        series = csv_df["World Tension Data"]
+        series = csv_df["WT Data"]
         for i in series:
             series_row = ast.literal_eval(i)
+            print(series_row)
 
             if series_row["1940.December"] < 0.75:
                 color = "Red"
@@ -120,6 +122,9 @@ def create_world_tension_graph(input_file):
             elif series_row["1940.July"] < 0.75:
                 color = "Orange"
                 counter_orange += 1
+            elif series_row["1938.December"] > 0.75:
+                color = "Yellow"
+                counter_yellow += 1
             else:
                 color = "Green"
                 counter_green += 1
@@ -130,7 +135,7 @@ def create_world_tension_graph(input_file):
             paper_bgcolor=colors["background"],
             font_color=colors["text"],
             legend_title="Country",
-            title_text=f"World tension graph. {len(series)} graphs total, {counter_red} with < 75% tension reached by December 1940, {counter_orange} with < 75% tension reached by July 1940, {counter_green} with > 75% by July 1940."
+            title_text=f"World tension graph. {len(series)} graphs total, {counter_red} with < 75% WT by 12.1940, {counter_orange} with< 75% WT by 07.1940, {counter_yellow} with < 75% WT by 12.1939, {counter_green} with > 75% WT between 01.1939 and 06.1940."
         )
         
         fig.update_traces(line=dict(width=1))
@@ -546,52 +551,6 @@ def create_acw_winrate_graph(input_file, war_configuration):
     else:
         return generate_mock_graph()
 
-@app.callback(
-    Output("map-graph", "figure"),
-    Input("map-data-source", "value"))
-def create_map(input_file):
-    """Interactive map
-
-    Args:
-        input_file (_type_): .csv file name imported by the function. Is defined by the dropdown value
-
-    Returns:
-        fig: graph object
-    """
-    dirname = os.path.dirname(__file__)
-    filepath = os.path.join(dirname, "input//map.geojson")
-    with open(filepath, 'r', encoding="UTF-8") as file:
-        json_obj = file.read()
-    geojson = json.loads(json_obj)
-    csv_df = read_csv_file(input_file)
-
-    if "Num of divisions" in csv_df.columns:
-        # csv_df = csv_df["Who won the Spanish Civil War?"].value_counts()
-        df = pd.DataFrame({"Country": ["USA", "DEU", "FRA", "ARG"], "Divisions number": [100, 150, 125, 0]})
-        fig = px.choropleth(
-            data_frame=df, 
-            geojson=geojson, 
-            locations="Country", 
-            featureidkey="properties.adm0_a3", 
-            color="Divisions number"
-        )
-
-        fig.update_layout(
-            plot_bgcolor=colors["background"],
-            paper_bgcolor=colors["background"],
-            font_color=colors["text"],
-            legend_title="Country",
-        )
-        # Map - specific tweaks
-        fig.update_layout(
-            autosize=False,
-            margin = dict(l=0, r=0, b=0, t=0, pad=4, autoexpand=True),
-        )
-
-        return fig
-    else:
-        return generate_mock_graph()
-
 
 @app.callback(
     Output("industry-map-graph", "figure"),
@@ -700,8 +659,8 @@ def create_industry_graph(input_file, graph_type):
 
             tags_list = [i.split(";")[0] for i in series_row["1936.March"]]
             test_dict = {i:[] for i in tags_list}
-            print(test_dict)
-            print(series_row)
+            # print(test_dict)
+            # print(series_row)
 
             for value in series_row.values():
                 for tag in value:
@@ -773,11 +732,8 @@ app.layout = html.Div(
         dcc.Graph(id="acw-winrate-graph"),
 
         html.Br(),
-        html.Label(children="Test Map", id="map-section"),
+        html.Label(children="Industry Map", id="map-section"),
         dcc.Dropdown(id="map-data-source", options=get_dropdown_options(), value=get_dropdown_options()[0], clearable=False),
-        dcc.Graph(id="map-graph"),
-
-        html.Br(),
         dcc.Dropdown(id="map-data-time", options=["1936.March", "1936.June", "1936.September", "1936.December", "1937.March", "1937.June", "1937.September", "1938.December", "1938.March", "1938.June", "1938.September", "1938.December"], value="1936.March", clearable=False),
         dcc.Dropdown(id="map-data-type", options=["Civilian Factories", "Military Factories", "Dockyards"], value="Civilian Factories", clearable=False),
         dcc.Graph(id="industry-map-graph"),
