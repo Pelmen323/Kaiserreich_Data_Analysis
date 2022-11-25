@@ -114,7 +114,6 @@ def create_world_tension_graph(input_file):
         series = csv_df["WT Data"]
         for i in series:
             series_row = ast.literal_eval(i)
-            print(series_row)
 
             if series_row["1940.December"] < 0.75:
                 color = "Red"
