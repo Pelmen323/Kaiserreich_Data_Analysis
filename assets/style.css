@@ -15,7 +15,7 @@ h1 {
 
 div {
     color: #abb6c5;
-    text-align: center;
+    /* text-align: center; */
     font-size: 24px;  
 }
 
@@ -32,7 +32,7 @@ div {
     color: #444444;
 }
 
-/* Style the contents section */
+/* Style the contents section - quick menu*/
 
 a {
     color: #abb6c5;
@@ -43,4 +43,19 @@ a {
 
 #contents-header {
     float: left;
+}
+
+/* Style the contents section - section titles*/
+.section-header {
+    margin: auto;
+    display: table;
+    font-size: 24px;
+    font-family: Roboto;
+}
+
+/* Style the contents section - graph info*/
+.md-tooltip {
+    float: left;
+    font-size: 20px;
+    font-family: Roboto;  
 }
